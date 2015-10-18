@@ -18,7 +18,7 @@ void WriteRedisValue(Writer* w, const RedisValue& value) {
 
     } else if (value.which() == REDIS_NULL) {
         w->write_char('$');
-        w->write_int(static_cast<int64_t>(-1)); //TODO: удостовериться что это верно!
+        w->write_int(static_cast<int64_t>(-1));
         w->write_crlf();
 
     } else if (value.which() == REDIS_ARRAY) {
@@ -29,8 +29,14 @@ void WriteRedisValue(Writer* w, const RedisValue& value) {
             WriteRedisValue(w, elem);
         }
 
+    } else if (value.which() == REDIS_BULK) {
+        w->write_char('$');
+        w->write_int(boost::get<RedisBulkString>(value).data.size());
+        w->write_crlf();
+        w->write_raw(boost::get<RedisBulkString>(value).data.c_str(), boost::get<RedisBulkString>(value).data.size());
+        w->write_crlf();
+
     } else {
-        //TODO: разобраться с типо bulk string из RESP
         throw std::runtime_error("unsupported type");
     }
 }
@@ -40,8 +46,30 @@ void ReadRedisValue(Reader* r, RedisValue* value) {
         case ':': {
             *value = r->read_int();
             break;
-        }
-        default:
+        } case '+': {
+            *value = r->read_line();
+            break;
+        } case '-': {
+            *value = RedisError(r->read_line());
+            break;
+        } case '$': {
+            int64_t len = r->read_int();
+            if (len == -1) {
+                *value = RedisNull();
+            } else {
+                *value = RedisBulkString(r->read_raw(len));
+            }
+            break;
+        } case '*': {
+            int64_t len = r->read_int();
+            *value = std::vector<RedisValue>();
+            boost::get<std::vector<RedisValue>> (*value).resize(len);
+
+            for (int64_t i = 0; i < len; ++i) {
+                ReadRedisValue(r, &(boost::get<std::vector<RedisValue>>(*value)[i]));
+            }
+            break;
+        } default:
             throw std::runtime_error("invalid redis value");
     }
 }

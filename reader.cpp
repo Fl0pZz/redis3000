@@ -29,7 +29,30 @@ int64_t Reader::read_int() {
     return negative ? -i : i;
 }
 
+std::string Reader::read_line() {
+    std::string out;
+    char tmp = read_char();
 
+    while (tmp != '\r') {
+        out.push_back(tmp);
+        tmp = read_char();
+    }
+    read_char(); // skip '\n'
+    return out;
+}
+
+std::string Reader::read_raw(size_t len) {
+    std::string out;
+    out.resize(len);
+
+    for (size_t i = 0; i < len; ++i) {
+        out[i] = read_char();
+    }
+    read_char(); // skip '\r'
+    read_char(); // skip '\n'
+
+    return out;
+}
 
 void StringReader::read_more() {
     if (input.empty()) throw std::runtime_error("end of input");

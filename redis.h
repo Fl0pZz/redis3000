@@ -14,6 +14,11 @@ struct RedisError {
 
     std::string msg;
 };
+struct RedisBulkString {
+    explicit RedisBulkString(const std::string& data) : data(data) {}
+
+    std::string data;
+};
 
 struct RedisNull {};
 
@@ -22,6 +27,7 @@ typedef boost::make_recursive_variant<
     int64_t,
     std::string,
     RedisError,
+    RedisBulkString,
     std::vector<boost::recursive_variant_>
 >::type RedisValue;
 
@@ -30,6 +36,7 @@ enum RedisType {
     REDIS_INT,
     REDIS_STRING,
     REDIS_ERROR,
+    REDIS_BULK,
     REDIS_ARRAY
 };
 
