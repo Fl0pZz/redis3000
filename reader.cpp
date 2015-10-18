@@ -29,6 +29,8 @@ int64_t Reader::read_int() {
     return negative ? -i : i;
 }
 
+
+
 void StringReader::read_more() {
     if (input.empty()) throw std::runtime_error("end of input");
 
@@ -38,5 +40,5 @@ void StringReader::read_more() {
         buffer_[end_] = input[end_];
     }
 
-    input.clear();
+    input.erase(input.begin(), input.begin() + end_);
 }

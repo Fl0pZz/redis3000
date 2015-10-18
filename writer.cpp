@@ -30,7 +30,11 @@ void Writer::write_crlf() {
     write_char('\n');
 }
 
+void Writer::write_string(const std::string &s) {
+    write_raw(s.data(), s.size());
+}
+
 void StringWriter::flush() {
-    result.append(buffer_.begin(), buffer_.end() + wpos_);
+    result.append(buffer_.begin(), buffer_.begin() + wpos_);
     wpos_ = 0;
 }
