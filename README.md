@@ -1,2 +1,2 @@
 # redis3000
-Redis CS HSE educational project
+Проект Redis Фахреева Рафаэля (145 группа)
