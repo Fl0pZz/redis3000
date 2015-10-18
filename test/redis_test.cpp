@@ -7,8 +7,9 @@ TEST(RedisValue, Construct) {
     RedisValue string = "abcd";
     RedisValue error = RedisError("Permission denied");
     RedisValue null = RedisNull();
+    RedisValue bulk = RedisBulkString("1\0\\1");
 
-    RedisValue array = std::vector<RedisValue>{integer, string, error, null};
+    RedisValue array = std::vector<RedisValue>{integer, string, error, null, bulk};
 }
 
 TEST(WriteRedisValue, Int) {
@@ -89,6 +90,16 @@ TEST(WriteRedisValue, Array) {
     EXPECT_STREQ("*4\r\n:10\r\n+abcd\r\n-Permission denied\r\n$-1\r\n", write.result.c_str());
 }
 
+TEST(WriteRedisValue, BulkString) {
+    StringWriter write(1024);
+
+    RedisValue bulk = RedisBulkString("\t\r\n");
+    WriteRedisValue(&write, bulk);
+    write.flush();
+
+    EXPECT_STREQ("$3\r\n\t\r\n\r\n", write.result.c_str());
+}
+
 
 TEST(ReadRedisValue, Int) {
     RedisValue val;
@@ -111,24 +122,61 @@ TEST(ReadRedisValue, Int) {
     ReadRedisValue(&reader, &val);
     EXPECT_EQ(-9223372036854775807, boost::get<int64_t>(val));
 }
-/*
+
 TEST(ReadRedisValue, Null) {
     RedisValue val;
 
     StringReader reader;
 
     reader.input = "$-1\r\n";
-    EXPECT_EQ(, boost::get<RedisNull>(val));
+    ReadRedisValue(&reader, &val);
+    EXPECT_EQ(REDIS_NULL, val.which());
 }
-*/
-/*
+
 TEST(ReadRedisValue, String) {
     RedisValue val;
 
     StringReader reader;
 
-    reader.input = ":OK\r\n";
+    reader.input = "+OK\r\n";
     ReadRedisValue(&reader, &val);
-    EXPECT_STREQ("OK", boost::get<int64_t>(val));
+    EXPECT_STREQ("OK", boost::get<std::string>(val).c_str());
 }
-*/
+
+TEST(ReadRedisValue, Error) {
+    RedisValue val;
+
+    StringReader reader;
+
+    reader.input = "-Error message\r\n";
+    ReadRedisValue(&reader, &val);
+    EXPECT_STREQ("Error message", boost::get<RedisError>(val).msg.c_str());
+
+    reader.input = "-123\r\n";
+    ReadRedisValue(&reader, &val);
+    EXPECT_STREQ("123", boost::get<RedisError>(val).msg.c_str());
+}
+
+TEST(ReadRedisValue, Array) {
+    RedisValue val;
+
+    StringReader reader;
+
+    reader.input = "*4\r\n:10\r\n+abcd\r\n-Permission denied\r\n$-1\r\n";
+    ReadRedisValue(&reader, &val);
+    EXPECT_EQ(10, boost::get<int64_t>(boost::get<std::vector<RedisValue>>(val)[0]));
+    EXPECT_STREQ("abcd", boost::get<std::string>(boost::get<std::vector<RedisValue>>(val)[1]).c_str());
+    EXPECT_STREQ("Permission denied", boost::get<RedisError>(boost::get<std::vector<RedisValue>>(val)[2]).msg.c_str());
+    EXPECT_EQ(REDIS_NULL, boost::get<std::vector<RedisValue>>(val)[3].which());
+}
+
+
+TEST(ReadRedisValue, BulkString) {
+    RedisValue val;
+
+    StringReader reader;
+
+    reader.input = "$3\r\n\t\r\n\r\n";
+    ReadRedisValue(&reader, &val);
+    EXPECT_STREQ("\t\r\n", boost::get<RedisBulkString>(val).data.c_str());
+}
