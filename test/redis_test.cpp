@@ -100,6 +100,14 @@ TEST(WriteRedisValue, BulkString) {
     EXPECT_STREQ("$3\r\n\t\r\n\r\n", write.result.c_str());
 }
 
+TEST(WriteRedisValue, BufOverflow) {
+    StringWriter writer(3);
+
+    RedisValue data = RedisBulkString("123456");
+    WriteRedisValue(&writer, data);
+
+    EXPECT_STREQ("$6\r\n123456\r\n", writer.result.c_str());
+}
 
 TEST(ReadRedisValue, Int) {
     RedisValue val;
