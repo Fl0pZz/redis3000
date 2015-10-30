@@ -1,5 +1,8 @@
 #include <vector>
 #include <string>
+#include <stdexcept>
+
+#include <configs.h>
 
 class Writer {
 public:

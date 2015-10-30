@@ -1,3 +1,4 @@
+#include <iostream>
 #include "reader.h"
 
 
@@ -8,6 +9,7 @@ char Reader::read_char() {
 
 int64_t Reader::read_int() {
     int64_t i = 0;
+    char ch = 0;
     bool negative = false;
 
     char first = read_char(), next;
@@ -23,7 +25,12 @@ int64_t Reader::read_int() {
         i += next - '0';
 
         next = read_char();
-    } while(next != '\r');
+        ++ch;
+    } while(next != '\r' && ch <= 21);
+
+    if (ch > 19) {
+        throw std::invalid_argument("not integer");
+    }
     read_char(); // skip '\n'
 
     return negative ? -i : i;
@@ -32,16 +39,25 @@ int64_t Reader::read_int() {
 std::string Reader::read_line() {
     std::string out;
     char tmp = read_char();
+    ssize_t lenght = 0;
 
-    while (tmp != '\r') {
+    while (tmp != '\r' && lenght++ <= MAX_LENGHT_STRING) {
         out.push_back(tmp);
         tmp = read_char();
+    }
+
+    if (lenght > MAX_LENGHT_STRING) {
+        throw std::invalid_argument("too large raw_string");
     }
     read_char(); // skip '\n'
     return out;
 }
 
 std::string Reader::read_raw(size_t len) {
+    if (len > MAX_LENGHT_ARRAY) {
+        throw std::invalid_argument("too large raw_string");
+    }
+
     std::string out;
     out.resize(len);
 

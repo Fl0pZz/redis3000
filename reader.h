@@ -2,6 +2,8 @@
 #include <string>
 #include <stdexcept>
 
+#include <configs.h>
+
 class Reader {
 public:
     explicit Reader(size_t buffer_size) : buffer_(buffer_size) {}
