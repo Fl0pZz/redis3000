@@ -1,4 +1,4 @@
-#include "redis.h"
+#include "protocol/redis.h"
 
 #include <gtest/gtest.h>
 

@@ -6,9 +6,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++11")
 include_directories(.)
 
 add_library(redis
-        redis.cpp
-        reader.cpp
-        writer.cpp
+        protocol/redis.cpp
+        protocol/reader.cpp
+        protocol/writer.cpp
 )
 
 add_executable(redis-server

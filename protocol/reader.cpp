@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include "reader.h"
 
 
@@ -38,8 +39,7 @@ int64_t Reader::read_int() {
 
 std::string Reader::read_line() {
     std::string out;
-    char tmp = read_char();
-    ssize_t lenght = 0;
+    char tmp = read_char();    ssize_t lenght = 0;
 
     while (tmp != '\r' && lenght++ <= MAX_LENGHT_STRING) {
         out.push_back(tmp);
