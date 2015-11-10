@@ -9,7 +9,11 @@ add_library(redis
         protocol/redis.cpp
         protocol/reader.cpp
         protocol/writer.cpp
-)
+        server/Socket.cpp
+        server/Commands.cpp
+        server/Listener.cpp
+        server/Server.cpp
+        server/Table.cpp)
 
 add_executable(redis-server
         main.cpp
