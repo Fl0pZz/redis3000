@@ -2,7 +2,7 @@
 
 #include <string>
 #include "protocol/redis.h"
-
+#include "Table.h"
 
 class Cmd {
 public:
@@ -13,14 +13,20 @@ public:
 
 
 class Set : public Cmd {
-    Set();
+private:
+    std::string cmdName = "set";
+public:
+    Set(std::unordered_map<RedisValue> * table);
     std::string name();
     RedisValue exec(RedisValue args);
 };
 
 
 class Get : public Cmd {
-    Get();
+private:
+    std::string cmdName = "get";
+public:
+    Get(std::unordered_map<RedisValue> * table);
     std::string name();
     RedisValue exec(RedisValue args);
 };
