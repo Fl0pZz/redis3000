@@ -2,7 +2,7 @@
 #include <string>
 #include <stdexcept>
 
-#include <configs.h>
+#include "configs.h"
 
 class Reader {
 public:

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <limits>
 #include "reader.h"
 
 
@@ -22,12 +21,14 @@ int64_t Reader::read_int() {
     }
 
     do {
-        i *= 10;
-        i += next - '0';
-
+        if (__builtin_smull_overflow(i, 10, &i)) {
+            throw std::invalid_argument("overflow integer");
+        }
+        if (__builtin_saddl_overflow(i, next - '0', &i)) {
+            throw std::invalid_argument("overflow integer");
+        }
         next = read_char();
-        ++ch;
-    } while(next != '\r' && ch <= 21);
+    } while(next != '\r' && ++ch < 21);
 
     if (ch > 19) {
         throw std::invalid_argument("not integer");

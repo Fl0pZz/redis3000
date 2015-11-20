@@ -129,6 +129,15 @@ TEST(ReadRedisValue, Int) {
     reader.input = ":-9223372036854775807\r\n";
     ReadRedisValue(&reader, &val);
     EXPECT_EQ(-9223372036854775807, boost::get<int64_t>(val));
+
+    try {
+        reader.input = ":-9999999999999999999\r\n";
+        ReadRedisValue(&reader, &val);
+    } catch (std::invalid_argument &e) {
+        EXPECT_STREQ(e.what(), "overflow integer");
+    } catch (...) {
+        FAIL() << "Expected std::invalid_argument of overflow integer";
+    }
 }
 
 TEST(ReadRedisValue, Null) {
@@ -187,4 +196,8 @@ TEST(ReadRedisValue, BulkString) {
     reader.input = "$3\r\n\t\r\n\r\n";
     ReadRedisValue(&reader, &val);
     EXPECT_STREQ("\t\r\n", boost::get<RedisBulkString>(val).data.c_str());
+
+    reader.input = "$0\r\n\r\n";
+    ReadRedisValue(&reader, &val);
+    EXPECT_STREQ("", boost::get<RedisBulkString>(val).data.c_str());
 }

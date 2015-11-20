@@ -5,8 +5,8 @@
 
 class Table {
 private:
-    std::unordered_map<RedisValue> table_;
+    std::unordered_map<int, int> table_;
 public:
     Table();
-    std::unordered_map<RedisValue> * getPointerTable();
+    std::unordered_map<int, int> * getPointerTable();
 };
