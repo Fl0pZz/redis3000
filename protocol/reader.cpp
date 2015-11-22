@@ -1,4 +1,3 @@
-#include <iostream>
 #include "reader.h"
 
 
@@ -72,6 +71,22 @@ std::string Reader::read_raw(size_t len) {
 }
 
 void StringReader::read_more() {
+    if (input.empty()) throw std::runtime_error("end of input");
+
+    end_ = 0;
+    rpos_ = 0;
+    for (; end_ < input.size() && end_ < buffer_.size(); ++end_) {
+        buffer_[end_] = input[end_];
+    }
+
+    input.erase(input.begin(), input.begin() + end_);
+}
+
+void SocketReader::read_more() {
+    input = *(sock.getData(buffer_.size()));
+    std::cout << input[0] << '\n';
+    std::cout << "Data: " << input;
+    std::cout << "___________\n";
     if (input.empty()) throw std::runtime_error("end of input");
 
     end_ = 0;

@@ -3,11 +3,13 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <iostream>
 
 #include <boost/variant.hpp>
 
 #include "reader.h"
 #include "writer.h"
+
 
 struct RedisError {
     explicit RedisError(const std::string& msg) : msg(msg) {}
@@ -20,7 +22,9 @@ struct RedisBulkString {
     std::string data;
 };
 
-struct RedisNull {};
+struct RedisNull {
+    explicit RedisNull() {}
+};
 
 typedef boost::make_recursive_variant<
     RedisNull,

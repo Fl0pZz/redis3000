@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include "protocol/redis.h"
+#include "../protocol/redis.h"
 #include "Table.h"
+
 
 class Cmd {
 public:

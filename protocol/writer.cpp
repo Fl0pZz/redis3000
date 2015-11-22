@@ -1,5 +1,6 @@
 #include "writer.h"
 
+
 void Writer::write_int(int64_t i) {
     char buff[128];
     int len = snprintf(buff, sizeof(buff), "%ld", i);
@@ -43,5 +44,10 @@ void Writer::write_string(const std::string &s) {
 
 void StringWriter::flush() {
     result.append(buffer_.begin(), buffer_.begin() + wpos_);
+    wpos_ = 0;
+}
+
+void SocketWriter::flush() {
+    sock.sendData(std::string(buffer_.begin(), buffer_.begin() + wpos_));
     wpos_ = 0;
 }

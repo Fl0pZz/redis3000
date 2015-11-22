@@ -2,7 +2,9 @@
 #include <string>
 #include <stdexcept>
 
-#include <configs.h>
+#include "../configs.h"
+#include "../server/Socket.h"
+
 
 class Writer {
 public:
@@ -26,6 +28,15 @@ public:
     explicit StringWriter(size_t buffer_size = 1024) : Writer(buffer_size) {}
 
     std::string result;
+
+    virtual void flush() override;
+};
+
+class SocketWriter : public Writer {
+public:
+    explicit SocketWriter(int fd, size_t buffer_size = 1024) : sock(fd), Writer(buffer_size) {}
+
+    Socket sock;
 
     virtual void flush() override;
 };

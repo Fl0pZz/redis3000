@@ -1,6 +1,9 @@
-#include "protocol/redis.h"
+#include <sys/socket.h>
+#include <thread>
+#include "../contrib/gtest/gtest.h"
+#include "../protocol/redis.h"
+#include "../server/Server.h"
 
-#include <gtest/gtest.h>
 
 TEST(RedisValue, Construct) {
     RedisValue integer = 10;
@@ -200,4 +203,81 @@ TEST(ReadRedisValue, BulkString) {
     reader.input = "$0\r\n\r\n";
     ReadRedisValue(&reader, &val);
     EXPECT_STREQ("", boost::get<RedisBulkString>(val).data.c_str());
+}
+
+
+TEST(RedisServer, Socket) {
+    int fd[2];
+    socketpair(AF_UNIX, SOCK_STREAM, 0, fd);
+
+    SocketWriter writer(fd[0], 1024);
+    SocketReader reader(fd[1], 41);
+
+    RedisValue integer = 10;
+    RedisValue string = "abcd";
+    RedisValue error = RedisError("Permission denied");
+    RedisValue null = RedisNull();
+    RedisValue array = std::vector<RedisValue>{integer, string, error, null};
+
+    WriteRedisValue(&writer, array);
+    writer.flush();
+    RedisValue val;
+    ReadRedisValue(&reader, &val);
+    EXPECT_EQ(10, boost::get<int64_t>(boost::get<std::vector<RedisValue>>(val)[0]));
+    EXPECT_STREQ("abcd", boost::get<std::string>(boost::get<std::vector<RedisValue>>(val)[1]).c_str());
+    EXPECT_STREQ("Permission denied", boost::get<RedisError>(boost::get<std::vector<RedisValue>>(val)[2]).msg.c_str());
+    EXPECT_EQ(REDIS_NULL, boost::get<std::vector<RedisValue>>(val)[3].which());
+}
+
+
+TEST(RedisServer, AcceptConnection) {
+    TestServer s(6376, 1);
+
+    std::thread t([&] {
+        s.serve();
+    });
+
+    LocalSocket soccli1;
+    soccli1.connect_(6376);
+
+    t.join();
+
+    ASSERT_EQ(1, s.countConn_);
+}
+
+
+TEST(RedisServer, ReadData) {
+    TestServer s(6376, 1);
+    std::string * inp;
+    std::thread t([&] {
+        s.serve();
+        inp = s.out_->getData(3);
+    });
+
+    LocalSocket soccli;
+    soccli.connect_(6376);
+    soccli.write_(std::string("abc"));
+
+    t.join();
+
+    ASSERT_STREQ("abc", inp->c_str());
+}
+
+
+TEST(RedisServer, WriteData) {
+    TestServer s(6376, 1);
+    std::string * inp;
+
+    std::thread t([&] {
+        s.serve();
+        s.out_->sendData(std::string("abc"));
+    });
+
+    LocalSocket soccli;
+    soccli.connect_(6376);
+    inp = soccli.read_(3);
+
+    t.join();
+
+    ASSERT_STREQ("abc", inp->c_str());
 }

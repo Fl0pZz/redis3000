@@ -1,5 +1,5 @@
-#include <iostream>
 #include "redis.h"
+
 
 void WriteRedisValue(Writer* w, const RedisValue& value) {
     if (value.which() == REDIS_INT) {

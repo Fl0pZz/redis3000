@@ -1,26 +1,30 @@
 #pragma once
 
-#include <vector>
+#include <deque>
 #include "Listener.h"
+#include "Table.h"
+#include "../protocol/redis.h"
 
 
 class Server {
-private:
-    Listener listener;
+protected:
+    Listener listener_;
 public:
-    Server();
-    Server(int port);
-    void server(int max_accept = -1);
-    virtual void handle(int conn) = 0;
+    explicit Server(int port = 6379, unsigned int maxCli = 10);
+    virtual void serve() = 0;
 };
 
-class TestServer : public Server {
-    std::vector<int> conns;
-    virtual void handle(int conn) { conns.push_back(conn); }
+class TestServer : protected Server {
+public:
+    using Server::Server;
+    unsigned int countConn_ = 0;
+    std::unique_ptr<Socket> out_;
+    virtual void serve() override;
 };
 
-class ProdServer : public Server {
-    std::vector<int> conns;
-    virtual void handle(int conn) { conns.push_back(conn); }
+class ProdServer : protected Server {
+public:
+    using Server::Server;
+    virtual void serve() override;
 };
 
