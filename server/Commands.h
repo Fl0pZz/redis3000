@@ -1,33 +1,32 @@
 #pragma once
 
-#include <string>
 #include "../protocol/redis.h"
-#include "Table.h"
+#include "../configs.h"
+#include "Storage.h"
 
 
 class Cmd {
+protected:
+    command name_;
+    std::unordered_map<std::string, std::string> * storage_;
 public:
-    virtual ~Cmd() {};
-    virtual std::string name() = 0;
-    virtual RedisValue exec(RedisValue args) = 0;
+    Cmd(command name, Storage * storage);
+    command name();
+    virtual RedisValue exec(RedisValue& args) = 0;
 };
 
 
-class Set : public Cmd {
-private:
-    std::string cmdName = "set";
+class Set : protected Cmd {
 public:
-    Set(std::unordered_map<int, int> * table);
-    std::string name();
-    RedisValue exec(RedisValue args);
+    Set(Storage * table);
+    using Cmd::name;
+    RedisValue exec(RedisValue& args);
 };
 
 
-class Get : public Cmd {
-private:
-    std::string cmdName = "get";
+class Get : protected Cmd {
 public:
-    Get(std::unordered_map<int, int> * table);
-    std::string name();
-    RedisValue exec(RedisValue args);
+    Get(Storage * table);
+    using Cmd::name;
+    RedisValue exec(RedisValue& args);
 };

@@ -16,16 +16,20 @@ int Socket::getSD() {
 std::string * Socket::getData(size_t size) {
     std::string *out = new std::string();
     out->resize(size);
-    std::cout << "__________\n";
+    //std::cout << "__________\n";
     size = read(socketDescripter_, const_cast<char *>(out->c_str()), size);
-    std::cout << "INput data size: " << size << "\n";
+    std::cout << "Input data size: " << size << "\n";
     out->resize(size);
     return out;
 }
 
 void Socket::sendData(std::string && input) {
     size_t size = 0;
-    while ((size += write(socketDescripter_, input.c_str(), input.size())) < input.size()) {}
+    std::cout << "SEND_DATA: " << input << '\n';
+    std::cout << size << " " << input.size() << '\n';
+    while ((size += write(socketDescripter_, input.c_str() + size, input.size() - size)) < input.size()) {
+        std::cout << size << " " << input.size() << '\n';
+    }
 }
 
 Socket::~Socket() {

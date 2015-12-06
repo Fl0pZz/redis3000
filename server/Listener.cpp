@@ -54,7 +54,7 @@ std::unique_ptr<Socket> Listener::acceptCli() {
 
     std::unique_ptr<Socket> newClient(new Socket(accept(socListenerDisc_, (struct sockaddr *) &aa, &slen)));
     newClient->options_ = aa;
-    std::cout << "listener: get a clint\n";
+    std::cout << "listener: get a client\n";
     return newClient;
 }
 

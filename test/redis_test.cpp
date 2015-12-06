@@ -3,6 +3,8 @@
 #include "../contrib/gtest/gtest.h"
 #include "../protocol/redis.h"
 #include "../server/Server.h"
+#include "../server/Storage.h"
+#include "../server/Commands.h"
 
 
 TEST(RedisValue, Construct) {
@@ -280,4 +282,44 @@ TEST(RedisServer, WriteData) {
     t.join();
 
     ASSERT_STREQ("abc", inp->c_str());
+}
+
+
+TEST(RedisStorage, Set) {
+    Storage table;
+    Set s(&table);
+    RedisValue cmd = RedisBulkString("SET");
+    RedisValue key = RedisBulkString("a");
+    RedisValue value = RedisBulkString("b");
+    RedisValue val = std::vector<RedisValue> {cmd, key, value};
+
+    RedisValue result = s.exec(val);
+    EXPECT_EQ(SET, s.name());
+    EXPECT_STREQ("b", table.getPtrOfStorage()->operator[]("a").c_str());
+    EXPECT_STREQ("OK", boost::get<std::string>(result).c_str());
+
+    key = RedisBulkString("b");
+    value = RedisBulkString("abc");
+    val = std::vector<RedisValue> {cmd, key, value};
+
+    result = s.exec(val);
+    EXPECT_STREQ("abc", table.getPtrOfStorage()->operator[]("b").c_str());
+    EXPECT_STREQ("OK", boost::get<std::string>(result).c_str());
+}
+
+
+TEST(RedisStorage, Get) {
+    Storage table;
+
+    table.getPtrOfStorage()->operator[]("a") = "b";
+
+    Get g(&table);
+    RedisValue cmd = RedisBulkString("GET");
+    RedisValue key = RedisBulkString("a");
+    RedisValue val = std::vector<RedisValue> {cmd, key};
+
+    RedisValue result = g.exec(val);
+
+    EXPECT_EQ(GET, g.name());
+    EXPECT_STREQ("b", boost::get<RedisBulkString>(result).data.c_str());
 }

@@ -4,8 +4,15 @@
 Server::Server(int port, unsigned int maxCli) : listener_(port, maxCli) {}
 
 void ProdServer::serve() {
+    Storage table;
+    Set set(&table);
+    Get get(&table);
+    std::unordered_map<std::string, command> commands {
+            {"SET", set.name()},
+            {"GET", get.name()}
+    };
+
     std::deque<std::unique_ptr<Socket>> dequeClients;
-    RedisValue val;
 
     dequeClients.push_back(listener_.acceptCli());
 
@@ -13,10 +20,19 @@ void ProdServer::serve() {
     SocketWriter dataToClient(dequeClients[0]->getSD());
 
     while (true) {
+        static RedisValue val;
         ReadRedisValue(&dataFromClient, &val);
 
-        //WriteRedisValue(&dataToClient, val);
-        //dataToClient.flush();
+        switch (commands.at(boost::get<RedisBulkString>(boost::get<std::vector<RedisValue>>(val)[0]).data)) {
+            case SET : {
+                WriteRedisValue(&dataToClient, set.exec(val));
+                dataToClient.flush();
+            }
+            case GET : {
+                WriteRedisValue(&dataToClient, get.exec(val));
+                dataToClient.flush();
+            }
+        }
     }
 }
 

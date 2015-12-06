@@ -13,7 +13,7 @@ add_library(redis
         server/Commands.cpp
         server/Listener.cpp
         server/Server.cpp
-        server/Table.cpp)
+        server/Storage.cpp)
 
 add_executable(redis-server
         main.cpp

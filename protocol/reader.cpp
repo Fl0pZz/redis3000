@@ -84,9 +84,9 @@ void StringReader::read_more() {
 
 void SocketReader::read_more() {
     input = *(sock.getData(buffer_.size()));
-    std::cout << input[0] << '\n';
+    /*std::cout << input[0] << '\n';
     std::cout << "Data: " << input;
-    std::cout << "___________\n";
+    std::cout << "___________\n";*/
     if (input.empty()) throw std::runtime_error("end of input");
 
     end_ = 0;
