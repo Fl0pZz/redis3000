@@ -250,10 +250,10 @@ TEST(RedisServer, AcceptConnection) {
 
 TEST(RedisServer, ReadData) {
     TestServer s(6376, 1);
-    std::string * inp;
+    char inp[4];
     std::thread t([&] {
         s.serve();
-        inp = s.out_->getData(3);
+        s.out_->getData(inp, 3);
     });
 
     LocalSocket soccli;
@@ -262,7 +262,7 @@ TEST(RedisServer, ReadData) {
 
     t.join();
 
-    ASSERT_STREQ("abc", inp->c_str());
+    ASSERT_STREQ("abc", inp);
 }
 
 
@@ -272,7 +272,8 @@ TEST(RedisServer, WriteData) {
 
     std::thread t([&] {
         s.serve();
-        s.out_->sendData(std::string("abc"));
+        char str[] = "abc";
+        s.out_->sendData(str, 3);
     });
 
     LocalSocket soccli;

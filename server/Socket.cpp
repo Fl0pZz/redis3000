@@ -13,29 +13,29 @@ int Socket::getSD() {
     return socketDescripter_;
 }
 
-std::string * Socket::getData(size_t size) {
-    std::string *out = new std::string();
-    out->resize(size);
-    //std::cout << "__________\n";
-    size = read(socketDescripter_, const_cast<char *>(out->c_str()), size);
-    std::cout << "Input data size: " << size << "\n";
-    out->resize(size);
-    return out;
+size_t Socket::getData(char * input, size_t size) {
+    if ((size = read(socketDescripter_, input, size)) == -1) {
+        throw std::invalid_argument("can't read data from socket");
+    }
+    //std::cout << "SIZE_IN: " << size << "\n";
+    //std::cout << std::string(input) << "\n";
+    return size;
 }
 
-void Socket::sendData(std::string && input) {
-    size_t size = 0;
-    std::cout << "SEND_DATA: " << input << '\n';
-    std::cout << size << " " << input.size() << '\n';
-    while ((size += write(socketDescripter_, input.c_str() + size, input.size() - size)) < input.size()) {
-        std::cout << size << " " << input.size() << '\n';
-    }
+void Socket::sendData(char * input, size_t size) {
+    size_t sizeWrite = 0;
+    ssize_t readBytes = 0;
+    std::cout << "SIZE_OUT: " << size << "\n";
+    do {
+        if ((readBytes = write(socketDescripter_, input + sizeWrite, size - sizeWrite)) == -1) {
+            throw std::invalid_argument("can't send data to socket");
+        }
+    } while ((sizeWrite += readBytes) < sizeWrite);
 }
 
 Socket::~Socket() {
     close(socketDescripter_);
 }
-
 
 
 LocalSocket::LocalSocket() {

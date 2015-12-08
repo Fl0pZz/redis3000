@@ -7,6 +7,7 @@ void ProdServer::serve() {
     Storage table;
     Set set(&table);
     Get get(&table);
+    RedisValue val;
     std::unordered_map<std::string, command> commands {
             {"SET", set.name()},
             {"GET", get.name()}
@@ -20,7 +21,6 @@ void ProdServer::serve() {
     SocketWriter dataToClient(dequeClients[0]->getSD());
 
     while (true) {
-        static RedisValue val;
         ReadRedisValue(&dataFromClient, &val);
 
         switch (commands.at(boost::get<RedisBulkString>(boost::get<std::vector<RedisValue>>(val)[0]).data)) {

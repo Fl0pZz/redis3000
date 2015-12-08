@@ -15,8 +15,8 @@ public:
     struct sockaddr_in options_;
     Socket(int sD);
     int getSD();
-    void sendData(std::string && input);
-    std::string * getData(size_t size);
+    void sendData(char * input, size_t size);
+    size_t getData(char * output, size_t size);
     ~Socket();
 };
 
