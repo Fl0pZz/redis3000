@@ -27,10 +27,12 @@ void ProdServer::serve() {
             case SET : {
                 WriteRedisValue(&dataToClient, set.exec(val));
                 dataToClient.flush();
+                break;
             }
             case GET : {
                 WriteRedisValue(&dataToClient, get.exec(val));
                 dataToClient.flush();
+                break;
             }
         }
     }
